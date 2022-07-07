@@ -1,0 +1,89 @@
+# Config file for pushover script. Parameters set in this file can be 
+# overridden by the command line options, so defaults can be set here.
+#
+# "Your User Key" on https://pushover.net/
+#usertoken=
+# 
+# API Token/Key from application page
+#apptoken=
+#
+# Application name if using the hash of tokens. Not really useful here since 
+# the API token can be set directly.
+#application=
+#
+# Message text to send
+#message=
+#
+# Title of notification
+#title
+#
+# Message priority 
+#
+# -2 : Lowest priority. No sound or vibration, and doesn't generate a 
+#      notification (badge # increase on iOS)
+# -1 : Low priority. No sound or vibration, but will generate a notification.
+#  0 : Default. During quiet hours messages are sent as low priority.
+#  1 : High priority. Bypasses quiet hours.
+#  2 : Emergency. Same as high priority, but will repeat until notification 
+#      is acknowledged.
+#
+#priority=
+#
+# Retry and Expire - only applies to Emergency priority notications.
+#
+# The retry parameter defines how often (in seconds) to send the notification.
+# The expire parameter sets how to to retry for.
+#retry=
+#expire=
+#
+# Sound to play with alert. In addition to this list, custom sounds can be
+# uploaded on the pushover.net site. Sounds do not play for macOS built-in
+# notifications.
+#   
+#    pushover - Pushover (default)  
+#    bike - Bike  
+#    bugle - Bugle  
+#    cashregister - Cash Register  
+#    classical - Classical  
+#    cosmic - Cosmic  
+#    falling - Falling  
+#    gamelan - Gamelan  
+#    incoming - Incoming  
+#    intermission - Intermission  
+#    magic - Magic  
+#    mechanical - Mechanical  
+#    pianobar - Piano Bar  
+#    siren - Siren  
+#    spacealarm - Space Alarm  
+#    tugboat - Tug Boat  
+#    alien - Alien Alarm (long)  
+#    climb - Climb (long)  
+#    persistent - Persistent (long)  
+#    echo - Pushover Echo (long)  
+#    updown - Up Down (long)  
+#    vibrate - Vibrate Only
+#    none - None (silent) 
+#
+#sound=
+#
+# An image to send with the notification. Displays in the full client/browser
+# client. Max size is 2.5mb.
+#image=
+#
+# URL & URL title
+#
+# The Pushover device clients automatically turn URLs found in message bodies 
+# into clickable links that open in the device's browser (or whichever 
+# application is configured to handle them). It may be desirable to include a
+# supplementary URL that is not included in the message text, but available 
+# for the user to click on.
+#url=
+#url_title=
+#
+# Device(s) to send notification to. Multiple devices can be listed with 
+# commas separating them (no spaces). Devices must be configured on 
+# pushover.net first.
+# device=
+
+    -d --device       Send to a specific device name
+    -H --html         HTML Format

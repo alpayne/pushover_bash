@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+#
+# Send an alert via pushover
+#
+
+if ! hash curl 2>/dev/null; then
+  echo -e "\\n\\033[31m$(basename "$0") needs curl installed.\\033[0m\n" 
+  exit 1 
+fi
+
+usage() {
+  cat << EOF
+  Usage: $(basename "$0") [ --application <app_name> | --apptoken <token> ] --message <text> [ --config <config file> ] [ options ]
+
+  Send a notification via Pushover.
+
+  OPTIONS:
+    -T --usertoken    User token
+    -A --apptoken     Application token
+    -a --application  Application name 
+    -m --message      Message (required)
+    -t --title        Title of your notification
+    -p --priority     Priority of your message : -2 (Silent), -1 (Quiet), 1 (High), 2 (Emergency)
+    -s --sound        Sound (https://pushover.net/api#sounds)
+    -i --image        Attach an image (up to 2.5mb)
+    -u --url          URL Link
+    -n --url_title    URL Title
+    -r --retry        Retry (seconds)
+    -e --expiry       Expiry (seconds)
+    -d --device       Send to a specific device name
+    -H --html         HTML Format
+
+    Any of the above can be set in a config file.
+
+    -c --config       Config file location (optional, use to set parameters for an app)
+    -x --debug        Debug
+    -h --help         Show this message
+
+    Config file format, one per line: 
+
+      long_parameter="value"
+
+    Application tokens can be stored in a hash table and called by application name with 
+    the --application parameter:
+
+      app_tokens=(["application"]="token" ["application2"]="token2" ...)
+
+EOF
+}
+
+cmd_options() {
+  local arg=
+  for arg; do
+    local delim=""
+
+    case "$arg" in
+      # convert --long-options to short options
+      --usertoken)     args="${args}-T ";;
+      --apptoken)      args="${args}-A ";;
+      --application)   args="${args}-a ";;
+      --message)       args="${args}-m ";;
+      --title)         args="${args}-t ";;
+      --priority)      args="${args}-p ";;
+      --sound)         args="${args}-s ";;
+      --image)         args="${args}-i ";;
+      --url)           args="${args}-u ";;
+      --url_title)     args="${args}-n ";;
+      --retry)         args="${args}-r ";;
+      --expiry)        args="${args}-e ";;
+      --device)        args="${args}-d ";;
+      --html)          args="${args}-H ";;
+      --config)        args="${args}-c ";;
+      --help)          args="${args}-h ";;
+
+      # pass through other options
+      *) [[ "${arg:0:1}" == "-" ]] || delim="\""
+      args="${args}${delim}${arg}${delim} ";;
+  esac
+done
+
+  # reset the positional parameters to the short options
+  eval set -- "$args"
+
+  while getopts "T:A:a:m:t:p:s:i:u:n:r:e:d:Hc:h" OPTION; do
+    case $OPTION in
+      T) opt_usertoken=$OPTARG;;
+      A) opt_apptoken=$OPTARG;;
+      a) opt_application=$OPTARG;;
+      m) opt_message=$OPTARG;;
+      t) opt_title=$OPTARG;;
+      p) opt_priority=$OPTARG;;
+      s) opt_sound=$OPTARG;;
+      i) opt_image=$OPTARG;;
+      u) opt_url=$OPTARG;;
+      n) opt_url_title=$OPTARG;;
+      r) opt_retry=$OPTARG;;
+      e) opt_expiry=$OPTARG;;
+      d) opt_device=$OPTARG;;
+      H) opt_html=1;;
+      c) CONFIG_FILE=$OPTARG;;
+      h) usage; exit 0 ;;
+      *) usage; exit 0 ;;
+    esac
+  done
+  return 0
+}
+
+cmd_options "$@"
+
+# initialize so environment doesn't affect script
+# settings could be hard-coded here
+usertoken=${PUSHOVER_USER_TOKEN}  # grab from environment if set
+apptoken=
+application=
+message=
+title=
+priority=
+sound=
+image=
+url=
+url_title=
+retry=
+expiry=
+device=
+html=0
+
+[[ -f $CONFIG_FILE ]] && . "$CONFIG_FILE"
+
+# ensure we don't override parameters from command line
+usertoken=${opt_usertoken:=${usertoken}}
+apptoken=${opt_apptoken:=${apptoken}}
+application=${opt_application:=${application}}
+message=${opt_message:=${message}}
+title=${opt_title:=${title}}
+priority=${opt_priority:=${priority}}
+sound=${opt_sound:=${sound}}
+image=${opt_image:=${image}}
+url=${opt_url:=${url}}
+url_title=${opt_url_title:=${url_title}}
+retry=${opt_retry:=${retry}}
+expiry=${opt_expiry:=${expiry}}
+device=${opt_device:=${device}}
+html=${opt_html:=${html}}
+
+if [[ -z $apptoken ]]; then
+  if [[ -z $message ]] || [[ -z $app_tokens ]]; then
+    echo -e "\\n\\033[31m  Message and Application token are required.\\033[0m\n"
+    usage
+    exit 1
+  else
+    apptoken=${app_tokens[$application]}
+  fi
+fi
+
+# attachment parameter: '@' tells curl to read the file; only insert if image is set 
+curl -s \
+  -F "token=$apptoken" \
+  -F "user=$usertoken" \
+  -F "message=$message" \
+  -F "title=$title" \
+  -F "priority=$priority" \
+  -F "sound=$sound" \
+  -F "attachment=${image:+@${image}}" \
+  -F "url=$URL" \
+  -F "url_title=$url_title" \
+  -F "retry=$retry" \
+  -F "expiry=$expiry" \
+  -F "device=$device" \
+  -F "html=$html" \
+  https://api.pushover.net/1/messages.json
+
+exit $?
+
