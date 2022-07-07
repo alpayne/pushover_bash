@@ -18,17 +18,19 @@ usage() {
     -T --usertoken    User token
     -A --apptoken     Application token
     -a --application  Application name 
-    -m --message      Message (required)
-    -t --title        Title of your notification
+    -m --message      Message (required), 1024 chars max
+    -t --title        Title of your notification, 250 chars max
     -p --priority     Priority of your message : -2 (Silent), -1 (Quiet), 1 (High), 2 (Emergency)
     -s --sound        Sound (https://pushover.net/api#sounds)
     -i --image        Attach an image (up to 2.5mb)
-    -u --url          URL Link
-    -n --url_title    URL Title
+    -u --url          URL Link, 512 chars max
+    -n --url_title    URL Title, 100 chars max
     -r --retry        Retry (seconds)
     -e --expiry       Expiry (seconds)
     -d --device       Send to a specific device name
-    -H --html         HTML Format
+    -t --timestamp    UNIX timestamp for notification
+    -H --html         Allow HTML in notification
+    -M --monospace    Monospace format
 
     Any of the above can be set in a config file.
 
@@ -68,7 +70,9 @@ cmd_options() {
       --retry)         args="${args}-r ";;
       --expiry)        args="${args}-e ";;
       --device)        args="${args}-d ";;
+      --timestamp)     args="${args}-T ";;
       --html)          args="${args}-H ";;
+      --monospace)     args="${args}-M ";;
       --config)        args="${args}-c ";;
       --help)          args="${args}-h ";;
 
@@ -81,7 +85,7 @@ done
   # reset the positional parameters to the short options
   eval set -- "$args"
 
-  while getopts "T:A:a:m:t:p:s:i:u:n:r:e:d:Hc:h" OPTION; do
+  while getopts "T:A:a:m:t:p:s:i:u:n:r:e:d:HMc:h" OPTION; do
     case $OPTION in
       T) opt_usertoken=$OPTARG;;
       A) opt_apptoken=$OPTARG;;
@@ -96,7 +100,9 @@ done
       r) opt_retry=$OPTARG;;
       e) opt_expiry=$OPTARG;;
       d) opt_device=$OPTARG;;
+      T) opt_timestamp=$TIMESTAMP;;
       H) opt_html=1;;
+      M) opt_monospace=1;;
       c) CONFIG_FILE=$OPTARG;;
       h) usage; exit 0 ;;
       *) usage; exit 0 ;;
@@ -123,6 +129,7 @@ retry=
 expiry=
 device=
 html=0
+monospace=0
 
 [[ -f $CONFIG_FILE ]] && . "$CONFIG_FILE"
 
@@ -141,6 +148,12 @@ retry=${opt_retry:=${retry}}
 expiry=${opt_expiry:=${expiry}}
 device=${opt_device:=${device}}
 html=${opt_html:=${html}}
+monospace=${opt_monospace:=${monospace}}
+
+if [[ $html == 1 && $monospace == 1 ]]; then
+  echo -e "\\n\\033[33mHTML and MONOSPACE are mutually exclusive options.\\033[0m\n"
+  exit 1
+fi
 
 if [[ -z $apptoken ]]; then
   if [[ -z $message ]] || [[ -z $app_tokens ]]; then
@@ -167,6 +180,7 @@ curl -s \
   -F "expiry=$expiry" \
   -F "device=$device" \
   -F "html=$html" \
+  -F "monospace=$monospace" \
   https://api.pushover.net/1/messages.json
 
 exit $?

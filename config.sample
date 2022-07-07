@@ -3,6 +3,12 @@
 #
 # "Your User Key" on https://pushover.net/
 #usertoken=
+#
+# Application tokens
+#
+# This is a hash table of application API tokens that will be referenced
+# when the --application parameter is used.
+#app_tokens=( ['App1'='token1' ['App2']='token' ... )
 # 
 # API Token/Key from application page
 #apptoken=
@@ -84,6 +90,10 @@
 # commas separating them (no spaces). Devices must be configured on 
 # pushover.net first.
 # device=
-
-    -d --device       Send to a specific device name
-    -H --html         HTML Format
+#
+# HTML or Monospace formatting
+# 
+# Enable HTML to use HTML formatting in notifcations, or monospace for
+# plain text (e.g., code). These are optional, and mutually exclusive options.
+# html=1
+# monospace=1
