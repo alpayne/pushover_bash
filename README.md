@@ -1,6 +1,8 @@
 # Pushover bash script
 
-Send notifications via Pushover.
+This script send notifications via Pushover. It's 200 lines of wrapper code around a call to `curl`.
+
+See the [Pushover API documentation](https://pushover.net/api) for details on each of the parameters. Most are also described in the same config file.
 
 ## Message priorities
 
@@ -11,6 +13,10 @@ Send notifications via Pushover.
 | 0  | Default. During quiet hours messages are sent as low priority.                                        |
 | 1  | High priority. Bypasses quiet hours.                                                                  |
 | 2  | Emergency. Same as high priority, but will repeat until notification is acknowledged.                 |
+
+If sending an Emergency notificagtion, two additional parameters `retry` and `expire` can be provided. Retry is how often (in seconds) you want the message to be resent. Expiry is how long (in seconds) to keep retrying for. For example, sending a `retry` parameter of 60 and an `expire` parameter of 3600 will cause your notification to be retried every 60 seconds for 1 hour. 
+
+## Usage
 
 ```text
   Usage: pushover [ --application <app_name> | --apptoken <token> ] --message <text> [ --config <config file> ] [ options ]
